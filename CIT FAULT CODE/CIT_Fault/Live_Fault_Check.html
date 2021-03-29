@@ -1,0 +1,168 @@
+<html>
+<title>Flextron Teck</title>
+
+<style>
+html, body {
+        background-color:black;
+        color:yellow;
+        
+      }
+
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+ .button {
+  background-color: red; /* Green */
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.button1 {border-radius: 50%;}
+
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/3.1.0/firebase-database.js"></script>
+
+
+<h1 style="background-color:powderblue;text-align:center;color:red;font-size:400%">
+SMART TRANSMISSION LINE FAULT DETECTION</h1>
+
+<body onload="startTime()">
+<p id="txt" style="text-align:center;color:black;font-size:150%"></p>
+</body>
+
+<table style="width:100%">
+    <tr>
+        <td id="Volt"style="text-align:center;font-size:150%">Voltage  :</td>
+        <td id="Fault"style="text-align:center;font-size:150%">Fault Detection :</td>
+        <td id="day"style="text-align:center;font-size:150%">Date/Time : </td>
+       <td id="Location"style="text-align:center;font-size:150%">Location : </td>
+       
+    </tr>
+</table>
+ <p> </p>
+<div class="container">
+    <div class="btn-holder">
+       <button onclick="FB_Clear()"style="font-size:100%;"> Reset Switch</button>
+     </div>
+   </div>
+
+<script>
+
+// Your web app's Firebase configuration
+  var firebaseConfig = {
+    databaseURL: "https://flextron-tech-iot-projects.firebaseio.com",
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  
+ // window.alert("test");
+  var firebaseRef=firebase.database().ref();
+  var Fault=firebaseRef.child("CIT_Fault/Fault");
+  var Voltage=firebaseRef.child("CIT_Fault/Volt");
+  var Loca=firebaseRef.child("CIT_Fault/Location");
+  
+var clk="";
+var nal="";
+  
+function startTime() {
+  var today = new Date();
+  var h = today.getHours();
+  var m = today.getMinutes();
+  var s = today.getSeconds();
+ 
+  var date = today.getDate()+'/'+(today.getMonth()+1)+'/'+today.getFullYear();
+nal=date;
+   
+// 0 AM and 0 PM should read as 12
+  var meridiem = "AM"; 
+  if (h > 12) {
+    h = h - 12;
+    meridiem = "PM";
+  }
+  if (h === 0) {
+    h = 12;    
+  }
+  
+  h = checkTime(h);
+  m = checkTime(m);
+  s = checkTime(s);
+  var clock=h + ":" + m + ":" + s+ " "+meridiem;
+  clk=clock;
+  
+  function checkTime(i) {
+  if (i < 10) {i = "0" + i};  
+  return i;
+	}
+    
+ document.getElementById('txt').innerHTML =date+" "+clock;
+  var t = setTimeout(startTime, 500);
+  }
+var ft=0;
+Fault.on('value',function(Fault){
+      var new_Fault=Fault.val();
+      ft=new_Fault;
+      if (new_Fault==1){
+      firebaseRef.child("CIT_Fault/Reset").set(0);
+      document.getElementById("Location").innerHTML="Location : CIT sanwich polytechnic college";
+      document.getElementById("Fault").innerHTML="Fault Detection : Yes";
+      document.getElementById('day').innerHTML ="Date/Time : "+nal+" "+ clk;
+      window.alert("Fault Detected Please Check Immediately !!!");
+      }
+      
+      if (new_Fault==0){
+      firebaseRef.child("CIT_Fault/Reset").set(0);
+      document.getElementById("Location").innerHTML="Location : ";
+      document.getElementById("Fault").innerHTML="Fault Detection : No ";
+      document.getElementById('day').innerHTML ="Date/Time : ";}
+      
+      });
+      
+  Voltage.on('value',function(Voltage){
+      var new_Voltage=Voltage.val();
+      var old_Voltage;
+      if(new_Voltage!=old_Voltage)
+      {
+      document.getElementById("Volt").innerHTML="Voltage  : "+new_Voltage +" V";
+      old_Voltage=new_Voltage;
+      }
+      
+      });
+      
+      /*Loca.on('value',function(Loca){
+      var new_Loca=Loca.val();
+      var old_Loca;
+      if(new_Loca!=old_Loca)
+      {
+      document.getElementById("Location").innerHTML="Location : Gandhipuram";
+      old_Loca=new_Loca;
+      }
+      
+      });*/
+      
+    
+   function FB_Clear()
+        {
+        if(ft==1){
+         firebaseRef.child("CIT_Fault/Reset").set(1);
+         //firebaseRef.child("CIT_Fault/Fault").set(0);
+         firebaseRef.child("CIT_Fault/Location").set("");
+         window.alert("successfully Reset Switch !!!");
+         }
+
+        }
+          
+</script>
+
+</html>
